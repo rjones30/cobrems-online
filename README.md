@@ -32,3 +32,11 @@ A suite of CGI-based web tools for the HallD Coherent Bramsstrahlung beam. This 
 	* `https://[SERVER_IP]/[PATH-TO-INSTALLED-TOOLS]/ratetool.cgi`
 	* `https://[SERVER_IP]/[PATH-TO-INSTALLED-TOOLS]/harptool.cgi`
 	* `https://[SERVER_IP]/[PATH-TO-INSTALLED-TOOLS]/harptool_2d.cgi`
+
+## Dependencies
+
+1. **ROOT**: you need to have the root command in the path, tested with v6.38.
+
+2. **PAW**: you need to have the CERNLIB 2005 suite installed, so that the pawX11 command is in the path.
+
+3. **vncserver**: you need to have the vncserver installed, so that vncserver is in the path. The ratetool.cgi script starts its on private Xvnc session on display 99, so that pawX11 can generate plots through th X11 interface. If screen 99 is not available, change the display number in the code near the top of the ratetool.cgi script.
