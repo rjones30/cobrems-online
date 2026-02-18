@@ -1,0 +1,10 @@
+*.pyc
+work/*.git
+work/*.macro
+work/last.kumac
+work/paw.metafile
+work/*.hbook
+work/*.root
+work/*.pdf
+work/*.png
+work/*.gif
