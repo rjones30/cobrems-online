@@ -29,6 +29,6 @@ A suite of CGI-based web tools for the HallD Coherent Bramsstrahlung beam. This 
 5. **Restart the apache server**: systemctl restart httpd
 
 6. **Test the tools** using a web browser:
-* `https://[SERVER_IP]/[PATH-TO-INSTALLED-TOOLS]/ratetool.cgi`
-* `https://[SERVER_IP]/[PATH-TO-INSTALLED-TOOLS]/harptool.cgi`
-* `https://[SERVER_IP]/[PATH-TO-INSTALLED-TOOLS]/harptool_2d.cgi`
+	* `https://[SERVER_IP]/[PATH-TO-INSTALLED-TOOLS]/ratetool.cgi`
+	* `https://[SERVER_IP]/[PATH-TO-INSTALLED-TOOLS]/harptool.cgi`
+	* `https://[SERVER_IP]/[PATH-TO-INSTALLED-TOOLS]/harptool_2d.cgi`
