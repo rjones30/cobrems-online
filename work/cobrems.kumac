@@ -1,0 +1,116 @@
+MACRO cobrems id=100 nbins=200 Emin=0 Emax=12 E0=12 Epeak=9.0 ytilt=250e-3 emit=2.5e-9 dist=76 coldiam=3.4e-3 radt=20e-6 cur=2.2 pol=0 recomp=1 coh=0 epol=0 pElim0=8.4 pElim1=9.0 bElim0=1.02 bElim1=2.04 eElim0=10.68 eElim1=11.7 mos=2e-5
+  message 'pol is' [pol] $sigma([pol])
+  if (([coh].eq.0).and.([pol].eq.0)) then
+    f=dNtdx(x)
+  elseif (([coh].ne.0).or.([pol].eq.1)) then
+    f=dNcdx(x)
+  elseif (([coh].eq.0).and.([pol].eq.2)) then
+    f=dNtdx(x)
+  else
+    f=dNidx(x)
+  endif
+  if ([recomp].ne.0) then
+    call cobrems.f77($rsigma([E0]),$rsigma([Epeak]),$rsigma([ytilt]),$rsigma([emit]),$rsigma([radt]),$rsigma([dist]),$rsigma([coldiam]),$sigma([pol]),$rsigma([epol]),$rsigma([mos]))
+  else
+    call cobrems($rsigma([E0]),$rsigma([Epeak]),$rsigma([ytilt]),$rsigma([emit]),$rsigma([radt]),$rsigma([dist]),$rsigma([coldiam]),&sigma([pol]),$rsigma([epol]),$rsigma([mos]))
+  endif
+  f/pl acceptance(x**2) 0 2 s
+  f/pl acceptance(x**2) 0 2
+  id0=[id]-2
+  x0=$rsigma([Emin])/$rsigma([E0])
+  x1=$rsigma([Emax])/$rsigma([E0])
+  fun1 [id0] [cur]*[f]/1.6e-13 [nbins] [x0] [x1]
+  id1=[id0]+1
+  h/copy [id0] [id1] 'with mosaic spread effects'
+  get/abs [id0] hisx
+  get/con [id0] hisy
+  call convol([nbins])
+  put/con [id1] hisy
+  id2=[id1]+1
+  1dhist [id2] 'as function of Egamma' [nbins] [Emin] [Emax]
+  sigma y=hisy/$rsigma([E0])
+  put/con [id2] y
+  h/pl [id2](10:) c
+  id3=[id2]+1
+  1dhist [id3] 'beam power spectrum' [nbins] [Emin] [Emax]
+  sigma py=y*hisx*$rsigma([E0]*1.6e-10)
+  put/con [id3] py
+  exec cobrems#sum [id2] Emin=$rsigma([pElim0]) Emax=$rsigma([pElim1]) text='tagged sum'
+  exec cobrems#sum [id2] Emin=$rsigma([bElim0]) Emax=$rsigma([bElim1]) text='bg sum'
+  exec cobrems#sum [id2] Emin=$rsigma([eElim0]) Emax=$rsigma([eElim1]) text='endpoint sum'
+  exec cobrems#sum [id3] Emin=$rsigma([Emin]) Emax=$rsigma([Emax]) text='beam power'
+RETURN
+
+MACRO p id=100 nbins=200 Emin=0 Emax=12 E0=12 Epeak=9.0 ytilt=250e-3 emit=1e-8 dist=75 coldiam=3.4e-3 f=dNcdx(x) cur=1.0 epol=0 mos=2e-5
+  call cobrems.f77($rsigma([E0]),$rsigma([Epeak]),$rsigma([ytilt]),$rsigma([emit]),$rsigma([radt]),$rsigma([dist]),$rsigma([coldiam]),1,$rsigma([epol]),$rsigma([mos]))
+  f/pl acceptance(x**2) 0 2 s
+  f/pl acceptance(x**2) 0 2
+  id0=[id]-2
+  x0=$rsigma([Emin])/$rsigma([E0])
+  x1=$rsigma([Emax])/$rsigma([E0])
+  fun1 [id0] [cur]*[f]/1.6e-13 [nbins] [x0] [x1]
+  id1=[id0]+1
+  h/copy [id0] [id1] 'with mosaic spread effects'
+  get/abs [id0] hisx
+  get/con [id0] hisy
+  call convol([nbins])
+  put/con [id1] hisy
+  id2=[id1]+1
+  1dhist [id2] '' [nbins] [Emin] [Emax]
+  sigma y=hisy/$rsigma([E0])
+  put/con [id2] y
+  h/pl [id2](10:) c
+  exec cobrems#sum [id2] Emin=8.4 Emax=9.0 text='tagged polar sum'
+RETURN
+
+MACRO sum id=100 Emin=8.4 Emax=9.0 text='tagged sum' idw=12345
+  if ($hexist([idw]).gt.0) then
+    h/del [idw]
+  endif
+  h/copy [id]($rsigma([Emin]+1e-9):$rsigma([Emax]-1e-9)) [idw]
+  sum=$hinfo([idw],sum)
+  xmax=$hinfo([idw],xmax)
+  xmin=$hinfo([idw],xmin)
+  xbins=$hinfo([idw],xbins)
+  message [text] is $sigma([sum]*([xmax]-[xmin])*1.0/[xbins])
+RETURN
+
+MACRO scan
+  exec cobrems
+  shell rm -f cobrems_scan.dat
+  exec cobrems#scanpt id=80 coldiam=0.10
+  do i=1,100,4
+    id=[i]*100
+    d=0.0002+[i]*0.0001
+    exec cobrems#scanpt id=[id] coldiam=[d]
+  enddo
+RETURN
+
+MACRO scanpt id=100 coldiam=3.4e-3 idw=12345
+  exec cobrems id=[id] coldiam=[coldiam] recomp=0
+  if ($hexist([idw]).gt.0) then
+    h/del [idw]
+  endif
+  h/copy [id](1.0:2.0) [idw]
+  sumbg=$hinfo([idw],sum)
+  bins=$hinfo([idw],xbins)
+  ratebg=$sigma([sumbg]*1.0/[bins])
+  h/del [idw]
+  h/copy [id](8.4:9.0) [idw]
+  sumtag=$hinfo([idw],sum)
+  bins=$hinfo([idw],xbins)
+  ratetag=$sigma([sumtag]*0.599/[bins])
+  h/del [idw]
+  h/copy [id](11.0:11.7) [idw]
+  sumend=$hinfo([idw],sum)
+  bins=$hinfo([idw],xbins)
+  rateend=$sigma([sumend]*0.70/[bins])
+  id1=[id]+10
+  exec cobrems id=[id1] coldiam=[coldiam] pol=1 recomp=0
+  h/del [idw]
+  h/copy [id1](8.4:9.0) [idw]
+  sumpol=$hinfo([idw],sum)
+  bins=$hinfo([idw],xbins)
+  ratepol=$sigma([sumpol]*0.599/[bins])
+  shell echo [coldiam] [ratebg] [ratetag] [rateend] [ratepol] >>cobrems_scan.dat
+RETURN

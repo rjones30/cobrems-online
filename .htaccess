@@ -1,0 +1,23 @@
+# Enable CGI execution for this directory
+Options +ExecCGI
+
+# Explicitly enable only these three scripts
+<Files "ratetool.cgi">
+    SetHandler cgi-script
+    Require all granted
+</Files>
+
+<Files "harptool.cgi">
+    SetHandler cgi-script
+    Require all granted
+</Files>
+
+<Files "harptool_2d.cgi">
+    SetHandler cgi-script
+    Require all granted
+</Files>
+
+# Prevent access to your Python worker scripts or other files
+<FilesMatch "\.py">
+    Require all denied
+</FilesMatch>
