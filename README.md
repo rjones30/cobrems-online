@@ -1,4 +1,4 @@
-# Cobrems Analysis Tools for the Hall D Beamline
+# Cobrems Online Tools for the Hall D Beamline
 
 A suite of CGI-based web tools for the HallD Coherent Bramsstrahlung beam. This repository contains Bash entry points that wrap Python worker scripts.
 
